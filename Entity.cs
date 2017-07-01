@@ -20,8 +20,8 @@ public class Entity : MonoBehaviour {
 
     public Dictionary<ArmorSlots, Gear> armor;
 
-    public Gear weaponMainHand { get; } = new GearEmpty();
-    public Gear weaponOffHand { get; } = new GearEmpty();
+    private Gear weaponMainHand { get; } = new GearEmpty();
+    private Gear weaponOffHand { get; } = new GearEmpty();
 
     public Entity()
     {
@@ -34,7 +34,10 @@ public class Entity : MonoBehaviour {
     private List<TakeDamageListener> takeDamageListeners;
     public void addTakeDamageListener(TakeDamageListener listener)
     {
-        takeDamageListeners.Add(listener);
+        if (!takeDamageListeners.Contains(listener))
+        {
+            takeDamageListeners.Add(listener);
+        }
     }
     public double takeDamage(double damage, DamageType type)
     {
@@ -59,10 +62,37 @@ public class Entity : MonoBehaviour {
 
     }
 
+	private List<DealDamageListener> dealDamageListeners;
+	public void addDealDamageListener(DealDamageListener listener)
+	{
+        if (!dealDamageListeners.Contains(listener))
+		{
+            dealDamageListeners.Add(listener);
+		}
+	}
+    public double dealDamage(double damage, DamageType type, Entity target) {
+        double newDamage = damage;
+
+        foreach (DealDamageListener listener in dealDamageListeners) {
+            damage += listener.dealDamage(damage, type);
+		}
+		if (newDamage < 0)
+		{
+			newDamage = 0;
+		}
+
+        target.takeDamage(newDamage);
+        return newDamage;
+    }
+
 
     public void die()
     {
         Debug.Log("Entity died");
+    }
+
+    public double castSpell(Spell spell, Entity target) {
+        
     }
 
 }
